@@ -10,9 +10,9 @@ import { sendEmail } from "../lib/email";
 // ─── CONSTANTS ───
 const DEPARTMENTS = ["Engineering","Sales","HR","Finance","Operations","IT","Marketing","Quality","Logistics","Maintenance"];
 const STATUS = {
-  pending:  { bg:"#FEF9C3", fg:"#854D0E", border:"#EAB308", icon:"⏳" },
-  approved: { bg:"#DCFCE7", fg:"#166534", border:"#22C55E", icon:"✓" },
-  rejected: { bg:"#FEE2E2", fg:"#991B1B", border:"#EF4444", icon:"✕" },
+  pending:  { bg:"#FEF9C3", fg:"#854D0E", border:"#EAB308" },
+  approved: { bg:"#DCFCE7", fg:"#166534", border:"#22C55E" },
+  rejected: { bg:"#FEE2E2", fg:"#991B1B", border:"#EF4444" },
 };
 const COLORS = ["#3B82F6","#10B981","#F59E0B","#EF4444","#8B5CF6","#EC4899","#14B8A6","#F97316","#6366F1","#84CC16"];
 
@@ -138,8 +138,8 @@ export default function App() {
     if (emailConfig.notifyManagerOnSubmit && mgr?.email) {
       const appUrl = window.location.origin;
       sendEmail(emailConfig, mgr.email, mgr.name,
-        `⏱ New Overtime Request from ${emp?.name}`,
-        `Hello ${mgr.name},\n\n${emp?.name} (${emp?.department}) submitted overtime:\n\n📅 Date: ${fmt(reqData.date)}\n⏱ Hours: ${reqData.hours}\n📝 Reason: ${reqData.reason}\n\nReview it here: ${appUrl}\n\n— Overtime Manager, Platinum Group`
+        `New Overtime Request from ${emp?.name}`,
+        `Hello ${mgr.name},\n\n${emp?.name} (${emp?.department}) submitted overtime:\n\nDate: ${fmt(reqData.date)}\nHours: ${reqData.hours}\nLocation: ${reqData.location || "Not specified"}\nReason: ${reqData.reason}\n\nReview it here: ${appUrl}\n\n— Overtime Manager, Al Manaber`
       ).then(r => { if(r.success) flash("Email sent to manager","info"); });
     }
   };
@@ -221,10 +221,8 @@ export default function App() {
       <header style={{ background:"#0F172A",color:"#fff",position:"sticky",top:0,zIndex:50,borderBottom:"1px solid #1E293B" }}>
         <div style={{ maxWidth:1060,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0 20px",height:56 }}>
           <div style={{ display:"flex",alignItems:"center",gap:14 }}>
-            <div style={{ width:38,height:38,borderRadius:10,background:"linear-gradient(135deg,#3B82F6,#06B6D4)",display:"flex",alignItems:"center",justifyContent:"center" }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <div><h1 style={{ fontSize:15,fontWeight:700,margin:0 }}>Overtime Manager</h1><p style={{ fontSize:11,color:"#64748B",margin:0 }}>Platinum Group</p></div>
+            <div style={{ width:38,height:38,borderRadius:10,background:"linear-gradient(135deg,#3B82F6,#06B6D4)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:14,fontWeight:800,letterSpacing:1 }}>OT</div>
+            <div><h1 style={{ fontSize:15,fontWeight:700,margin:0 }}>Overtime Manager</h1><p style={{ fontSize:11,color:"#64748B",margin:0 }}>Al Manaber</p></div>
           </div>
           {session && (
             <div style={{ display:"flex",alignItems:"center",gap:12 }}>
@@ -267,25 +265,22 @@ function LoginForm({ onLogin }) {
     <div style={{ display:"flex",justifyContent:"center",paddingTop:60 }}>
       <div style={{ width:"100%",maxWidth:440,background:"#fff",borderRadius:20,padding:"36px 32px",boxShadow:"0 8px 32px rgba(0,0,0,0.08)" }}>
         <div style={{ textAlign:"center",marginBottom:28 }}>
-          <div style={{ width:56,height:56,borderRadius:16,background:"#EFF6FF",display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:16 }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          </div>
           <h2 style={{ fontSize:24,fontWeight:700,margin:"0 0 6px" }}>Sign In</h2>
           <p style={{ fontSize:14,color:"#64748B" }}>Enter your email and password</p>
         </div>
 
         <Field label="Email">
-          <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(""); }} placeholder="you@platinumgroup.com" style={S.inp} onKeyDown={e => e.key === "Enter" && handleSubmit()} />
+          <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(""); }} placeholder="you@almanaber.com" style={S.inp} onKeyDown={e => e.key === "Enter" && handleSubmit()} />
         </Field>
 
         <Field label="Password">
           <div style={{ position:"relative" }}>
             <input type={showPw ? "text" : "password"} value={password} onChange={e => { setPassword(e.target.value); setError(""); }} placeholder="Enter your password" style={S.inp} onKeyDown={e => e.key === "Enter" && handleSubmit()} />
-            <button onClick={() => setShowPw(!showPw)} style={{ position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",fontSize:14,color:"#94A3B8" }}>{showPw ? "🙈" : "👁"}</button>
+            <button onClick={() => setShowPw(!showPw)} style={{ position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",fontSize:12,color:"#94A3B8",fontWeight:600 }}>{showPw ? "Hide" : "Show"}</button>
           </div>
         </Field>
 
-        {error && <p style={{ color:"#DC2626",fontSize:13,fontWeight:600,marginBottom:8,padding:"8px 12px",background:"#FEF2F2",borderRadius:8,border:"1px solid #FECACA" }}>⚠ {error}</p>}
+        {error && <p style={{ color:"#DC2626",fontSize:13,fontWeight:600,marginBottom:8,padding:"8px 12px",background:"#FEF2F2",borderRadius:8,border:"1px solid #FECACA" }}>{error}</p>}
 
         <button onClick={handleSubmit} disabled={!email || !password || loading} style={{ ...S.btnPrimary, width:"100%", opacity: (!email || !password || loading) ? 0.45 : 1, marginTop:4 }}>
           {loading ? "Signing in..." : "Sign In →"}
@@ -307,11 +302,12 @@ function EmpView({ profile, employees, managers, requests, onSubmit }) {
   const [date, setDate] = useState(new Date().toISOString().slice(0,10));
   const [hours, setHours] = useState("");
   const [reason, setReason] = useState("");
+  const [location, setLocation] = useState("Office");
 
   const submit = () => {
     if (!date || !hours || !reason.trim()) return;
-    onSubmit({ employee_id: profile.profile_id, date, hours: parseFloat(hours), reason: reason.trim() });
-    setHours(""); setReason(""); setForm(false);
+    onSubmit({ employee_id: profile.profile_id, date, hours: parseFloat(hours), reason: reason.trim(), location });
+    setHours(""); setReason(""); setLocation("Office"); setForm(false);
   };
 
   const totalApproved = mine.filter(r => r.status === "approved").reduce((s,r) => s + Number(r.hours), 0);
@@ -336,6 +332,15 @@ function EmpView({ profile, employees, managers, requests, onSubmit }) {
             <Field label="Date Worked"><input type="date" value={date} onChange={e => setDate(e.target.value)} style={S.inp} /></Field>
             <Field label="Hours"><input type="number" step="0.5" min="0.5" max="16" value={hours} onChange={e => setHours(e.target.value)} placeholder="e.g. 2.5" style={S.inp} /></Field>
           </div>
+          <div style={S.g2}>
+            <Field label="Location">
+              <select value={location} onChange={e => setLocation(e.target.value)} style={{...S.sel,marginBottom:0}}>
+                <option value="Office">Office</option>
+                <option value="Home">Home</option>
+              </select>
+            </Field>
+            <div />
+          </div>
           <Field label="Reason / Task"><textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="Describe what you worked on..." rows={3} style={{ ...S.inp, resize:"vertical" }} /></Field>
           <button onClick={submit} disabled={!date||!hours||!reason.trim()} style={{ ...S.btnPrimary, opacity:(!date||!hours||!reason.trim())?0.45:1 }}>Submit Request</button>
         </div>
@@ -347,9 +352,9 @@ function EmpView({ profile, employees, managers, requests, onSubmit }) {
           {mine.map((r,i) => (
             <div key={r.id} className="animate-fade-up" style={{ ...S.card, borderLeft:`4px solid ${STATUS[r.status].border}`, animationDelay:`${i*0.04}s` }}>
               <div style={S.rowBetween}><span style={S.dateLabel}>{fmt(r.date)}</span><Badge status={r.status} /></div>
-              <p style={S.hoursLabel}>{r.hours} hours</p>
+              <p style={S.hoursLabel}>{r.hours} hours {r.location && <span style={{fontWeight:400,fontSize:13,color:"#64748B"}}>· {r.location}</span>}</p>
               <p style={S.reasonText}>{r.reason}</p>
-              {r.manager_note && <p style={S.noteText}>💬 {r.manager_note}</p>}
+              {r.manager_note && <p style={S.noteText}>{r.manager_note}</p>}
               <p style={S.metaText}>Submitted {fmtShort(r.created_at)} {fmtTime(r.created_at)} {r.reviewed_at ? ` · Reviewed ${fmtShort(r.reviewed_at)}` : ""}</p>
             </div>
           ))}
@@ -391,7 +396,7 @@ function MgrView({ profile, employees, managers, requests, onUpdate, onBulk }) {
         <StatBox value={team.length} label="Team Size" color="#6366F1" />
       </div>
 
-      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search by name or reason..." style={{...S.inp,marginBottom:12}} />
+      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by name or reason..." style={{...S.inp,marginBottom:12}} />
       <div style={S.tabBar}>
         {[["pending","Pending"],["approved","Approved"],["rejected","Rejected"],["all","All"]].map(([k,l]) => (
           <button key={k} onClick={()=>{setTab(k);setSelected(new Set());}} style={{...S.tabBtn,...(tab===k?S.tabOn:{})}}>{l}{k==="pending"&&pending.length>0?` (${pending.length})`:""}</button>
@@ -422,6 +427,7 @@ function MgrView({ profile, employees, managers, requests, onUpdate, onBulk }) {
                 <div style={{display:"flex",gap:16,margin:"8px 0",fontSize:14}}>
                   <span style={{fontWeight:600}}>{fmt(r.date)}</span>
                   <span style={{fontWeight:700,color:"#0F172A"}}>{r.hours} hrs</span>
+                  {r.location && <span style={{color:"#64748B"}}>{r.location}</span>}
                 </div>
                 <p style={S.reasonText}>{r.reason}</p>
                 {r.status === "pending" && (
@@ -431,7 +437,7 @@ function MgrView({ profile, employees, managers, requests, onUpdate, onBulk }) {
                     <button onClick={()=>onUpdate(r.id,"rejected",notes[r.id]||"")} style={S.btnReject}>✕ Reject</button>
                   </div>
                 )}
-                {r.manager_note && r.status !== "pending" && <p style={S.noteText}>💬 {r.manager_note}</p>}
+                {r.manager_note && r.status !== "pending" && <p style={S.noteText}>{r.manager_note}</p>}
                 <p style={S.metaText}>Submitted {fmtShort(r.created_at)} {fmtTime(r.created_at)}</p>
               </div>
             );
@@ -484,7 +490,7 @@ function AdminView({ managers, employees, requests, onAddEmployee, onEditEmploye
   }, [requests, month]);
 
   const exportHours = () => { downloadCSV(`overtime-hours-${month}.csv`,["Employee","Department","Manager","OT Hours","Requests"],[...hoursSummary.map(r=>[r.name,r.dept,r.manager,r.hours,r.count]),["TOTAL","","",totalH,hoursSummary.reduce((s,r)=>s+r.count,0)]]); };
-  const exportAll = () => { downloadCSV(`overtime-all.csv`,["Employee","Department","Manager","Date","Hours","Reason","Status","Manager Note","Submitted","Reviewed"],requests.map(r=>{const emp=employees.find(e=>e.id===r.employee_id);const mgr=managers.find(m=>m.id===emp?.manager_id);return[emp?.name,emp?.department,mgr?.name,r.date,r.hours,r.reason,r.status,r.manager_note,r.created_at,r.reviewed_at||""];})); };
+  const exportAll = () => { downloadCSV(`overtime-all.csv`,["Employee","Department","Manager","Date","Hours","Location","Reason","Status","Manager Note","Submitted","Reviewed"],requests.map(r=>{const emp=employees.find(e=>e.id===r.employee_id);const mgr=managers.find(m=>m.id===emp?.manager_id);return[emp?.name,emp?.department,mgr?.name,r.date,r.hours,r.location||"",r.reason,r.status,r.manager_note,r.created_at,r.reviewed_at||""];})); };
 
   const handleAddEmp = () => { if(!newEmp.name||!newEmp.manager_id||!newEmp.department) return; onAddEmployee(newEmp); setNewEmp({name:"",manager_id:"",department:""}); setShowAddEmp(false); };
   const handleAddMgr = () => { if(!newMgr.name||!newMgr.email) return; onAddManager(newMgr); setNewMgr({name:"",email:"",department:""}); setShowAddMgr(false); };
@@ -530,7 +536,7 @@ function AdminView({ managers, employees, requests, onAddEmployee, onEditEmploye
       </div>
 
       <div style={S.tabBar}>
-        {[["dashboard","📊 Dashboard"],["hours","⏱ Hours Report"],["people","👥 People"],["all","📋 All Requests"],["settings","⚙️ Settings"]].map(([k,l])=>(
+        {[["dashboard","Dashboard"],["hours","Hours Report"],["people","People"],["all","All Requests"],["settings","Settings"]].map(([k,l])=>(
           <button key={k} onClick={()=>setTab(k)} style={{...S.tabBtn,...(tab===k?S.tabOn:{})}}>{l}</button>
         ))}
       </div>
@@ -547,8 +553,8 @@ function AdminView({ managers, employees, requests, onAddEmployee, onEditEmploye
       {tab === "hours" && <div>
         <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
           <label style={S.lbl}>Month:</label><input type="month" value={month} onChange={e=>setMonth(e.target.value)} style={{...S.inp,width:200}} />
-          <button onClick={exportHours} style={{...S.btnPrimary,background:"#059669"}}>📥 Hours Summary</button>
-          <button onClick={exportAll} style={S.btnGhost}>📥 All Requests</button>
+          <button onClick={exportHours} style={{...S.btnPrimary,background:"#059669"}}>Hours Summary</button>
+          <button onClick={exportAll} style={S.btnGhost}>All Requests</button>
         </div>
         {hoursSummary.length===0?<Empty text="No approved overtime"/>:<div style={S.tblWrap}><table style={S.tbl}><thead><tr>{["Employee","Department","Manager","OT Hours","Requests"].map(h=><th key={h} style={S.th}>{h}</th>)}</tr></thead><tbody>{hoursSummary.map(r=>(<tr key={r.eid}><td style={S.td}><strong>{r.name}</strong></td><td style={S.td}>{r.dept}</td><td style={S.td}>{r.manager}</td><td style={{...S.td,fontWeight:700,textAlign:"center"}}>{r.hours}</td><td style={{...S.td,textAlign:"center"}}>{r.count}</td></tr>))}<tr style={{background:"#F1F5F9"}}><td colSpan={3} style={{...S.td,fontWeight:800}}>TOTAL</td><td style={{...S.td,fontWeight:800,textAlign:"center",color:"#059669"}}>{totalH} hrs</td><td style={{...S.td,fontWeight:700,textAlign:"center"}}>{hoursSummary.reduce((s,r)=>s+r.count,0)}</td></tr></tbody></table></div>}
       </div>}
@@ -559,27 +565,27 @@ function AdminView({ managers, employees, requests, onAddEmployee, onEditEmploye
         {showAddEmp && <div className="animate-fade-up" style={{...S.card,marginBottom:20}}><h3 style={S.cardTitle}>New Employee</h3><div style={S.g2}><Field label="Name"><input value={newEmp.name} onChange={e=>setNewEmp({...newEmp,name:e.target.value})} style={S.inp} placeholder="Full name"/></Field><Field label="Department"><select value={newEmp.department} onChange={e=>setNewEmp({...newEmp,department:e.target.value})} style={S.sel}><option value="">Select...</option>{DEPARTMENTS.map(d=><option key={d} value={d}>{d}</option>)}</select></Field></div><Field label="Manager"><select value={newEmp.manager_id} onChange={e=>setNewEmp({...newEmp,manager_id:e.target.value})} style={S.sel}><option value="">Select...</option>{managers.map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></Field><button onClick={handleAddEmp} style={S.btnPrimary}>Save Employee</button></div>}
 
         <h3 style={S.secTitle}>Managers ({managers.length})</h3>
-        <input value={mgrSearch} onChange={e=>setMgrSearch(e.target.value)} placeholder="🔍 Search..." style={{...S.inp,marginBottom:10}} />
-        <div style={S.tblWrap}><table style={S.tbl}><thead><tr>{["Name","Email","Department","Team","Actions"].map(h=><th key={h} style={S.th}>{h}</th>)}</tr></thead><tbody>{filteredMgrs.map(m=>(<tr key={m.id}><td style={S.td}><strong>{m.name}</strong></td><td style={S.td}>{m.email}</td><td style={S.td}>{m.department}</td><td style={{...S.td,textAlign:"center"}}>{employees.filter(e=>e.manager_id===m.id).length}</td><td style={{...S.td,textAlign:"center"}}><button onClick={()=>openEditMgr(m)} style={S.editBtn}>✏️ Edit</button><button onClick={()=>{if(confirm(`Remove ${m.name}?`))onDeleteManager(m.id);}} style={S.delBtn}>🗑</button></td></tr>))}</tbody></table></div>
+        <input value={mgrSearch} onChange={e=>setMgrSearch(e.target.value)} placeholder="Search..." style={{...S.inp,marginBottom:10}} />
+        <div style={S.tblWrap}><table style={S.tbl}><thead><tr>{["Name","Email","Department","Team","Actions"].map(h=><th key={h} style={S.th}>{h}</th>)}</tr></thead><tbody>{filteredMgrs.map(m=>(<tr key={m.id}><td style={S.td}><strong>{m.name}</strong></td><td style={S.td}>{m.email}</td><td style={S.td}>{m.department}</td><td style={{...S.td,textAlign:"center"}}>{employees.filter(e=>e.manager_id===m.id).length}</td><td style={{...S.td,textAlign:"center"}}><button onClick={()=>openEditMgr(m)} style={S.editBtn}>Edit</button><button onClick={()=>{if(confirm(`Remove ${m.name}?`))onDeleteManager(m.id);}} style={S.delBtn}>Remove</button></td></tr>))}</tbody></table></div>
 
         <h3 style={{...S.secTitle,marginTop:28}}>Employees ({employees.length})</h3>
-        <input value={empSearch} onChange={e=>setEmpSearch(e.target.value)} placeholder="🔍 Search..." style={{...S.inp,marginBottom:10}} />
-        <div style={S.tblWrap}><table style={S.tbl}><thead><tr>{["Name","Department","Manager","Actions"].map(h=><th key={h} style={S.th}>{h}</th>)}</tr></thead><tbody>{filteredEmps.map(e=>{const mgr=managers.find(m=>m.id===e.manager_id);return(<tr key={e.id}><td style={S.td}><strong>{e.name}</strong></td><td style={S.td}>{e.department}</td><td style={S.td}>{mgr?.name||"—"}</td><td style={{...S.td,textAlign:"center"}}><button onClick={()=>openEditEmp(e)} style={S.editBtn}>✏️ Edit</button><button onClick={()=>{if(confirm(`Remove ${e.name}?`))onDeleteEmployee(e.id);}} style={S.delBtn}>🗑</button></td></tr>);})}</tbody></table></div>
+        <input value={empSearch} onChange={e=>setEmpSearch(e.target.value)} placeholder="Search..." style={{...S.inp,marginBottom:10}} />
+        <div style={S.tblWrap}><table style={S.tbl}><thead><tr>{["Name","Department","Manager","Actions"].map(h=><th key={h} style={S.th}>{h}</th>)}</tr></thead><tbody>{filteredEmps.map(e=>{const mgr=managers.find(m=>m.id===e.manager_id);return(<tr key={e.id}><td style={S.td}><strong>{e.name}</strong></td><td style={S.td}>{e.department}</td><td style={S.td}>{mgr?.name||"—"}</td><td style={{...S.td,textAlign:"center"}}><button onClick={()=>openEditEmp(e)} style={S.editBtn}>Edit</button><button onClick={()=>{if(confirm(`Remove ${e.name}?`))onDeleteEmployee(e.id);}} style={S.delBtn}>Remove</button></td></tr>);})}</tbody></table></div>
       </div>}
 
       {tab === "all" && <div>
-        <div style={{marginBottom:16}}><button onClick={exportAll} style={{...S.btnPrimary,background:"#059669"}}>📥 Export CSV</button></div>
-        <div style={S.tblWrap}><table style={S.tbl}><thead><tr>{["Employee","Dept","Manager","Date","Hours","Reason","Status","Reviewed"].map(h=><th key={h} style={S.th}>{h}</th>)}</tr></thead><tbody>{requests.sort((a,b)=>b.created_at?.localeCompare(a.created_at)).map(r=>{const emp=employees.find(e=>e.id===r.employee_id);const mgr=managers.find(m=>m.id===emp?.manager_id);return(<tr key={r.id}><td style={S.td}><strong>{emp?.name}</strong></td><td style={S.td}>{emp?.department}</td><td style={S.td}>{mgr?.name}</td><td style={S.td}>{fmtShort(r.date)}</td><td style={{...S.td,fontWeight:700,textAlign:"center"}}>{r.hours}</td><td style={{...S.td,maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.reason}</td><td style={S.td}><Badge status={r.status}/></td><td style={S.td}>{r.reviewed_at?fmtShort(r.reviewed_at):"—"}</td></tr>);})}</tbody></table></div>
+        <div style={{marginBottom:16}}><button onClick={exportAll} style={{...S.btnPrimary,background:"#059669"}}>Export CSV</button></div>
+        <div style={S.tblWrap}><table style={S.tbl}><thead><tr>{["Employee","Dept","Manager","Date","Hours","Location","Reason","Status","Reviewed"].map(h=><th key={h} style={S.th}>{h}</th>)}</tr></thead><tbody>{requests.sort((a,b)=>b.created_at?.localeCompare(a.created_at)).map(r=>{const emp=employees.find(e=>e.id===r.employee_id);const mgr=managers.find(m=>m.id===emp?.manager_id);return(<tr key={r.id}><td style={S.td}><strong>{emp?.name}</strong></td><td style={S.td}>{emp?.department}</td><td style={S.td}>{mgr?.name}</td><td style={S.td}>{fmtShort(r.date)}</td><td style={{...S.td,fontWeight:700,textAlign:"center"}}>{r.hours}</td><td style={S.td}>{r.location||"—"}</td><td style={{...S.td,maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.reason}</td><td style={S.td}><Badge status={r.status}/></td><td style={S.td}>{r.reviewed_at?fmtShort(r.reviewed_at):"—"}</td></tr>);})}</tbody></table></div>
       </div>}
 
       {tab === "settings" && <div>
         <div style={{...S.card,borderLeft:"4px solid #3B82F6"}}>
-          <h3 style={S.cardTitle}>📧 Email Notifications</h3>
+          <h3 style={S.cardTitle}>Email Notifications</h3>
           <p style={{fontSize:13,color:"#64748B",marginBottom:16}}>Send emails to managers when overtime is submitted. Uses EmailJS (free: 200/month).</p>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20,padding:"12px 16px",background:emailConfig.enabled?"#DCFCE7":"#FEF2F2",borderRadius:10}}>
             <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:14,fontWeight:600,color:emailConfig.enabled?"#166534":"#991B1B"}}>
               <input type="checkbox" checked={emailConfig.enabled} onChange={e=>onUpdateEmailConfig({...emailConfig,enabled:e.target.checked})} />
-              {emailConfig.enabled?"✅ Emails ON":"❌ Emails OFF"}
+              {emailConfig.enabled?"Emails ON":"Emails OFF"}
             </label>
           </div>
           <div style={S.g3}>
@@ -592,7 +598,7 @@ function AdminView({ managers, employees, requests, onAddEmployee, onEditEmploye
             <label style={{display:"flex",alignItems:"center",gap:6,fontSize:13,cursor:"pointer"}}><input type="checkbox" checked={emailConfig.notifyEmployeeOnReview!==false} onChange={e=>onUpdateEmailConfig({...emailConfig,notifyEmployeeOnReview:e.target.checked})} /> Notify employee on review</label>
           </div>
           <div style={{marginTop:16,padding:16,background:"#F8FAFC",borderRadius:10,border:"1px solid #E2E8F0"}}>
-            <h4 style={{fontSize:14,fontWeight:700,marginBottom:10}}>📋 Setup Guide</h4>
+            <h4 style={{fontSize:14,fontWeight:700,marginBottom:10}}>Setup Guide</h4>
             <div style={{fontSize:13,color:"#475569",lineHeight:1.8}}>
               <p><strong>1.</strong> Go to emailjs.com → create free account</p>
               <p><strong>2.</strong> Email Services → Add New → connect Gmail/Outlook → copy <strong>Service ID</strong></p>
@@ -609,7 +615,7 @@ function AdminView({ managers, employees, requests, onAddEmployee, onEditEmploye
 }
 
 // ━━━━━ SHARED COMPONENTS ━━━━━
-function Badge({ status }) { const s=STATUS[status]; return <span style={{background:s.bg,color:s.fg,border:`1px solid ${s.border}`,padding:"2px 10px",borderRadius:20,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.6,whiteSpace:"nowrap"}}>{s.icon} {status}</span>; }
+function Badge({ status }) { const s=STATUS[status]; return <span style={{background:s.bg,color:s.fg,border:`1px solid ${s.border}`,padding:"2px 10px",borderRadius:20,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.6,whiteSpace:"nowrap"}}>{status}</span>; }
 function StatBox({ value, label, color, unit }) { return <div style={S.statCard}><span style={{fontSize:28,fontWeight:800,color,lineHeight:1,fontFamily:"'JetBrains Mono',monospace"}}>{value}{unit&&<span style={{fontSize:14,fontWeight:600,marginLeft:2}}>{unit}</span>}</span><span style={S.statLabel}>{label}</span></div>; }
 function Field({ label, children }) { return <div style={{marginBottom:14}}><label style={S.lbl}>{label}</label>{children}</div>; }
 function Empty({ text }) { return <p style={{color:"#94A3B8",fontSize:14,textAlign:"center",padding:"40px 20px"}}>{text}</p>; }

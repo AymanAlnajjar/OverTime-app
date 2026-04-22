@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Overtime Manager — Platinum Group",
+  title: "Overtime Manager — Al Manaber",
   description: "Track, approve, and report overtime hours",
 };
 

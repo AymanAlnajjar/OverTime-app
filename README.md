@@ -1,4 +1,4 @@
-# Overtime Manager — Platinum Group
+# Overtime Manager — Al Manaber
 
 ## Quick Deploy (30 minutes)
 
