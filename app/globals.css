@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@500&display=swap');
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #F8FAFC;
+  color: #0F172A;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { transform: translateX(120%); }
+  to { transform: translateX(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-fade-up { animation: fadeUp 0.3s ease both; }
+.animate-slide-in { animation: slideIn 0.3s ease; }
+.animate-pulse-soft { animation: pulse 2s ease infinite; }
