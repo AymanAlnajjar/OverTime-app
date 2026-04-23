@@ -8,7 +8,7 @@ import { supabase } from "../lib/supabase";
 import { sendEmail } from "../lib/email";
 
 // ─── CONSTANTS ───
-const DEPARTMENTS = ["Engineering","Sales","HR","Finance","Operations","IT","Marketing","Quality","Logistics","Maintenance"];
+const DEPARTMENTS = ["Top Management","Finance Department","Programming Department","BD Department","Design Studio Department","Design Department - Architecture Section","Design Department - Structure Section","Design Department - QS Section","Design Department - MEP Section","FLS Department","Factories Department","NHC Department","License Department","Project Management","Service Department"];
 const STATUS = {
   pending:  { bg:"#FEF9C3", fg:"#854D0E", border:"#EAB308" },
   approved: { bg:"#DCFCE7", fg:"#166534", border:"#22C55E" },
