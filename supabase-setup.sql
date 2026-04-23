@@ -17,6 +17,7 @@ CREATE TABLE managers (
 CREATE TABLE employees (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
+  email TEXT,
   department TEXT NOT NULL,
   manager_id UUID REFERENCES managers(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()

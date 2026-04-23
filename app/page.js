@@ -203,6 +203,13 @@ export default function App() {
 
   const updateEmailCfg = (cfg) => { setEmailConfig(cfg); setEmailConfigStorage(cfg); flash("Email settings saved"); };
 
+  const changePassword = async (newPassword) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) { flash("Error: " + error.message, "error"); return false; }
+    flash("Password updated successfully");
+    return true;
+  };
+
   // ─── RENDER ───
   if (!ready) return (
     <div className="flex items-center justify-center h-screen">
@@ -235,8 +242,8 @@ export default function App() {
 
       <main style={{ maxWidth:1060,margin:"0 auto",padding:"24px 20px 60px" }}>
         {view === "login" && <LoginForm onLogin={handleLogin} />}
-        {view === "employee" && <EmpView profile={profile} employees={employees} managers={managers} requests={requests} onSubmit={addRequest} />}
-        {view === "manager" && <MgrView profile={profile} employees={employees} managers={managers} requests={requests} onUpdate={updateRequest} onBulk={bulkUpdate} />}
+        {view === "employee" && <EmpView profile={profile} employees={employees} managers={managers} requests={requests} onSubmit={addRequest} onChangePassword={changePassword} />}
+        {view === "manager" && <MgrView profile={profile} employees={employees} managers={managers} requests={requests} onUpdate={updateRequest} onBulk={bulkUpdate} onChangePassword={changePassword} />}
         {view === "admin" && <AdminView managers={managers} employees={employees} requests={requests} onAddEmployee={addEmployee} onEditEmployee={editEmployee} onDeleteEmployee={deleteEmployee} onAddManager={addManager} onEditManager={editManager} onDeleteManager={deleteManager} emailConfig={emailConfig} onUpdateEmailConfig={updateEmailCfg} />}
       </main>
     </div>
@@ -293,7 +300,7 @@ function LoginForm({ onLogin }) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // EMPLOYEE VIEW
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-function EmpView({ profile, employees, managers, requests, onSubmit }) {
+function EmpView({ profile, employees, managers, requests, onSubmit, onChangePassword }) {
   const emp = employees.find(e => e.id === profile.profile_id);
   const mgr = managers.find(m => m.id === emp?.manager_id);
   const mine = useMemo(() => requests.filter(r => r.employee_id === profile.profile_id).sort((a,b) => b.created_at?.localeCompare(a.created_at)), [requests, profile.profile_id]);
@@ -303,6 +310,9 @@ function EmpView({ profile, employees, managers, requests, onSubmit }) {
   const [hours, setHours] = useState("");
   const [reason, setReason] = useState("");
   const [location, setLocation] = useState("Office");
+  const [showPwChange, setShowPwChange] = useState(false);
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
 
   const submit = () => {
     if (!date || !hours || !reason.trim()) return;
@@ -360,14 +370,29 @@ function EmpView({ profile, employees, managers, requests, onSubmit }) {
           ))}
         </div>
       )}
+
+      <h3 style={S.secTitle}>Account</h3>
+      <div style={S.card}>
+        <div style={S.rowBetween}>
+          <div><strong style={{fontSize:14}}>Change Password</strong><p style={{fontSize:13,color:"#64748B",margin:"2px 0 0"}}>Update your login password</p></div>
+          <button onClick={()=>setShowPwChange(!showPwChange)} style={S.btnGhost}>{showPwChange ? "Cancel" : "Change"}</button>
+        </div>
+        {showPwChange && (
+          <div style={{marginTop:16}}>
+            <div style={S.g2}>
+              <Field label="New Password"><input type="password" value={newPw} onChange={e=>setNewPw(e.target.value)} placeholder="Min 6 characters" style={S.inp} /></Field>
+              <Field label="Confirm Password"><input type="password" value={confirmPw} onChange={e=>setConfirmPw(e.target.value)} placeholder="Re-enter password" style={S.inp} /></Field>
+            </div>
+            {newPw && confirmPw && newPw !== confirmPw && <p style={{color:"#DC2626",fontSize:13,marginBottom:8}}>Passwords do not match</p>}
+            <button onClick={async ()=>{ if(newPw.length<6){alert("Password must be at least 6 characters");return;} if(newPw!==confirmPw){alert("Passwords do not match");return;} const ok=await onChangePassword(newPw); if(ok){setNewPw("");setConfirmPw("");setShowPwChange(false);} }} disabled={!newPw||newPw.length<6||newPw!==confirmPw} style={{...S.btnPrimary,opacity:(!newPw||newPw.length<6||newPw!==confirmPw)?0.45:1}}>Update Password</button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
-
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// MANAGER VIEW
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-function MgrView({ profile, employees, managers, requests, onUpdate, onBulk }) {
+function MgrView({ profile, employees, managers, requests, onUpdate, onBulk, onChangePassword }) {
   const mgr = managers.find(m => m.id === profile.profile_id);
   const team = employees.filter(e => e.manager_id === profile.profile_id);
   const teamReqs = useMemo(() => requests.sort((a,b) => b.created_at?.localeCompare(a.created_at)), [requests]);
@@ -377,6 +402,9 @@ function MgrView({ profile, employees, managers, requests, onUpdate, onBulk }) {
   const [notes, setNotes] = useState({});
   const [selected, setSelected] = useState(new Set());
   const [search, setSearch] = useState("");
+  const [showPwChange, setShowPwChange] = useState(false);
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
 
   const shown = (tab==="pending"?pending : tab==="approved"?teamReqs.filter(r=>r.status==="approved") : tab==="rejected"?teamReqs.filter(r=>r.status==="rejected") : teamReqs)
     .filter(r => { if(!search) return true; const emp = employees.find(e=>e.id===r.employee_id); return emp?.name.toLowerCase().includes(search.toLowerCase()) || r.reason.toLowerCase().includes(search.toLowerCase()); });
@@ -444,6 +472,24 @@ function MgrView({ profile, employees, managers, requests, onUpdate, onBulk }) {
           })}
         </div>
       )}
+
+      <h3 style={S.secTitle}>Account</h3>
+      <div style={S.card}>
+        <div style={S.rowBetween}>
+          <div><strong style={{fontSize:14}}>Change Password</strong><p style={{fontSize:13,color:"#64748B",margin:"2px 0 0"}}>Update your login password</p></div>
+          <button onClick={()=>setShowPwChange(!showPwChange)} style={S.btnGhost}>{showPwChange ? "Cancel" : "Change"}</button>
+        </div>
+        {showPwChange && (
+          <div style={{marginTop:16}}>
+            <div style={S.g2}>
+              <Field label="New Password"><input type="password" value={newPw} onChange={e=>setNewPw(e.target.value)} placeholder="Min 6 characters" style={S.inp} /></Field>
+              <Field label="Confirm Password"><input type="password" value={confirmPw} onChange={e=>setConfirmPw(e.target.value)} placeholder="Re-enter password" style={S.inp} /></Field>
+            </div>
+            {newPw && confirmPw && newPw !== confirmPw && <p style={{color:"#DC2626",fontSize:13,marginBottom:8}}>Passwords do not match</p>}
+            <button onClick={async ()=>{ if(newPw.length<6){alert("Password must be at least 6 characters");return;} if(newPw!==confirmPw){alert("Passwords do not match");return;} const ok=await onChangePassword(newPw); if(ok){setNewPw("");setConfirmPw("");setShowPwChange(false);} }} disabled={!newPw||newPw.length<6||newPw!==confirmPw} style={{...S.btnPrimary,opacity:(!newPw||newPw.length<6||newPw!==confirmPw)?0.45:1}}>Update Password</button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -456,7 +502,7 @@ function AdminView({ managers, employees, requests, onAddEmployee, onEditEmploye
   const [month, setMonth] = useState(new Date().toISOString().slice(0,7));
   const [showAddEmp, setShowAddEmp] = useState(false);
   const [showAddMgr, setShowAddMgr] = useState(false);
-  const [newEmp, setNewEmp] = useState({name:"",manager_id:"",department:""});
+  const [newEmp, setNewEmp] = useState({name:"",email:"",manager_id:"",department:""});
   const [newMgr, setNewMgr] = useState({name:"",email:"",department:""});
   const [editingEmp, setEditingEmp] = useState(null);
   const [editEmpData, setEditEmpData] = useState({});
@@ -492,10 +538,10 @@ function AdminView({ managers, employees, requests, onAddEmployee, onEditEmploye
   const exportHours = () => { downloadCSV(`overtime-hours-${month}.csv`,["Employee","Department","Manager","OT Hours","Requests"],[...hoursSummary.map(r=>[r.name,r.dept,r.manager,r.hours,r.count]),["TOTAL","","",totalH,hoursSummary.reduce((s,r)=>s+r.count,0)]]); };
   const exportAll = () => { downloadCSV(`overtime-all.csv`,["Employee","Department","Manager","Date","Hours","Location","Reason","Status","Manager Note","Submitted","Reviewed"],requests.map(r=>{const emp=employees.find(e=>e.id===r.employee_id);const mgr=managers.find(m=>m.id===emp?.manager_id);return[emp?.name,emp?.department,mgr?.name,r.date,r.hours,r.location||"",r.reason,r.status,r.manager_note,r.created_at,r.reviewed_at||""];})); };
 
-  const handleAddEmp = () => { if(!newEmp.name||!newEmp.manager_id||!newEmp.department) return; onAddEmployee(newEmp); setNewEmp({name:"",manager_id:"",department:""}); setShowAddEmp(false); };
+  const handleAddEmp = () => { if(!newEmp.name||!newEmp.email||!newEmp.manager_id||!newEmp.department) return; onAddEmployee(newEmp); setNewEmp({name:"",email:"",manager_id:"",department:""}); setShowAddEmp(false); };
   const handleAddMgr = () => { if(!newMgr.name||!newMgr.email) return; onAddManager(newMgr); setNewMgr({name:"",email:"",department:""}); setShowAddMgr(false); };
 
-  const openEditEmp = (e) => { setEditingEmp(e.id); setEditEmpData({name:e.name,department:e.department,manager_id:e.manager_id}); };
+  const openEditEmp = (e) => { setEditingEmp(e.id); setEditEmpData({name:e.name,email:e.email||"",department:e.department,manager_id:e.manager_id}); };
   const saveEditEmp = () => { if(!editEmpData.name||!editEmpData.manager_id) return; onEditEmployee(editingEmp, editEmpData); setEditingEmp(null); };
   const openEditMgr = (m) => { setEditingMgr(m.id); setEditMgrData({name:m.name,email:m.email,department:m.department}); };
   const saveEditMgr = () => { if(!editMgrData.name||!editMgrData.email) return; onEditManager(editingMgr, editMgrData); setEditingMgr(null); };
@@ -509,9 +555,12 @@ function AdminView({ managers, employees, requests, onAddEmployee, onEditEmploye
       {editingEmp && <EditModal title="Edit Employee" onClose={()=>setEditingEmp(null)}>
         <div style={S.g2}>
           <Field label="Name"><input value={editEmpData.name} onChange={e=>setEditEmpData({...editEmpData,name:e.target.value})} style={S.inp} /></Field>
-          <Field label="Department"><select value={editEmpData.department} onChange={e=>setEditEmpData({...editEmpData,department:e.target.value})} style={{...S.sel,marginBottom:0}}><option value="">Select...</option>{DEPARTMENTS.map(d=><option key={d} value={d}>{d}</option>)}</select></Field>
+          <Field label="Email"><input type="email" value={editEmpData.email||""} onChange={e=>setEditEmpData({...editEmpData,email:e.target.value})} style={S.inp} /></Field>
         </div>
-        <Field label="Manager"><select value={editEmpData.manager_id} onChange={e=>setEditEmpData({...editEmpData,manager_id:e.target.value})} style={{...S.sel,marginBottom:0}}><option value="">Select...</option>{managers.map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></Field>
+        <div style={S.g2}>
+          <Field label="Department"><select value={editEmpData.department} onChange={e=>setEditEmpData({...editEmpData,department:e.target.value})} style={{...S.sel,marginBottom:0}}><option value="">Select...</option>{DEPARTMENTS.map(d=><option key={d} value={d}>{d}</option>)}</select></Field>
+          <Field label="Manager"><select value={editEmpData.manager_id} onChange={e=>setEditEmpData({...editEmpData,manager_id:e.target.value})} style={{...S.sel,marginBottom:0}}><option value="">Select...</option>{managers.map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></Field>
+        </div>
         <div style={{display:"flex",gap:10,marginTop:20}}><button onClick={saveEditEmp} style={S.btnPrimary}>Save</button><button onClick={()=>setEditingEmp(null)} style={S.btnGhost}>Cancel</button></div>
       </EditModal>}
 
@@ -562,7 +611,7 @@ function AdminView({ managers, employees, requests, onAddEmployee, onEditEmploye
       {tab === "people" && <div>
         <div style={{display:"flex",gap:10,marginBottom:20}}><button onClick={()=>{setShowAddEmp(!showAddEmp);setShowAddMgr(false);}} style={S.btnPrimary}>+ Add Employee</button><button onClick={()=>{setShowAddMgr(!showAddMgr);setShowAddEmp(false);}} style={{...S.btnPrimary,background:"#6366F1"}}>+ Add Manager</button></div>
         {showAddMgr && <div className="animate-fade-up" style={{...S.card,marginBottom:20}}><h3 style={S.cardTitle}>New Manager</h3><div style={S.g2}><Field label="Name"><input value={newMgr.name} onChange={e=>setNewMgr({...newMgr,name:e.target.value})} style={S.inp} placeholder="Full name"/></Field><Field label="Email"><input value={newMgr.email} onChange={e=>setNewMgr({...newMgr,email:e.target.value})} style={S.inp} placeholder="email@company.com"/></Field></div><Field label="Department"><select value={newMgr.department} onChange={e=>setNewMgr({...newMgr,department:e.target.value})} style={S.sel}><option value="">Select...</option>{DEPARTMENTS.map(d=><option key={d} value={d}>{d}</option>)}</select></Field><button onClick={handleAddMgr} style={S.btnPrimary}>Save Manager</button></div>}
-        {showAddEmp && <div className="animate-fade-up" style={{...S.card,marginBottom:20}}><h3 style={S.cardTitle}>New Employee</h3><div style={S.g2}><Field label="Name"><input value={newEmp.name} onChange={e=>setNewEmp({...newEmp,name:e.target.value})} style={S.inp} placeholder="Full name"/></Field><Field label="Department"><select value={newEmp.department} onChange={e=>setNewEmp({...newEmp,department:e.target.value})} style={S.sel}><option value="">Select...</option>{DEPARTMENTS.map(d=><option key={d} value={d}>{d}</option>)}</select></Field></div><Field label="Manager"><select value={newEmp.manager_id} onChange={e=>setNewEmp({...newEmp,manager_id:e.target.value})} style={S.sel}><option value="">Select...</option>{managers.map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></Field><button onClick={handleAddEmp} style={S.btnPrimary}>Save Employee</button></div>}
+        {showAddEmp && <div className="animate-fade-up" style={{...S.card,marginBottom:20}}><h3 style={S.cardTitle}>New Employee</h3><div style={S.g2}><Field label="Name"><input value={newEmp.name} onChange={e=>setNewEmp({...newEmp,name:e.target.value})} style={S.inp} placeholder="Full name"/></Field><Field label="Email"><input type="email" value={newEmp.email} onChange={e=>setNewEmp({...newEmp,email:e.target.value})} style={S.inp} placeholder="email@company.com"/></Field></div><div style={S.g2}><Field label="Department"><select value={newEmp.department} onChange={e=>setNewEmp({...newEmp,department:e.target.value})} style={S.sel}><option value="">Select...</option>{DEPARTMENTS.map(d=><option key={d} value={d}>{d}</option>)}</select></Field><Field label="Manager"><select value={newEmp.manager_id} onChange={e=>setNewEmp({...newEmp,manager_id:e.target.value})} style={S.sel}><option value="">Select...</option>{managers.map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></Field></div><button onClick={handleAddEmp} style={S.btnPrimary}>Save Employee</button></div>}
 
         <h3 style={S.secTitle}>Managers ({managers.length})</h3>
         <input value={mgrSearch} onChange={e=>setMgrSearch(e.target.value)} placeholder="Search..." style={{...S.inp,marginBottom:10}} />
@@ -570,7 +619,7 @@ function AdminView({ managers, employees, requests, onAddEmployee, onEditEmploye
 
         <h3 style={{...S.secTitle,marginTop:28}}>Employees ({employees.length})</h3>
         <input value={empSearch} onChange={e=>setEmpSearch(e.target.value)} placeholder="Search..." style={{...S.inp,marginBottom:10}} />
-        <div style={S.tblWrap}><table style={S.tbl}><thead><tr>{["Name","Department","Manager","Actions"].map(h=><th key={h} style={S.th}>{h}</th>)}</tr></thead><tbody>{filteredEmps.map(e=>{const mgr=managers.find(m=>m.id===e.manager_id);return(<tr key={e.id}><td style={S.td}><strong>{e.name}</strong></td><td style={S.td}>{e.department}</td><td style={S.td}>{mgr?.name||"—"}</td><td style={{...S.td,textAlign:"center"}}><button onClick={()=>openEditEmp(e)} style={S.editBtn}>Edit</button><button onClick={()=>{if(confirm(`Remove ${e.name}?`))onDeleteEmployee(e.id);}} style={S.delBtn}>Remove</button></td></tr>);})}</tbody></table></div>
+        <div style={S.tblWrap}><table style={S.tbl}><thead><tr>{["Name","Email","Department","Manager","Actions"].map(h=><th key={h} style={S.th}>{h}</th>)}</tr></thead><tbody>{filteredEmps.map(e=>{const mgr=managers.find(m=>m.id===e.manager_id);return(<tr key={e.id}><td style={S.td}><strong>{e.name}</strong></td><td style={S.td}>{e.email||"—"}</td><td style={S.td}>{e.department}</td><td style={S.td}>{mgr?.name||"—"}</td><td style={{...S.td,textAlign:"center"}}><button onClick={()=>openEditEmp(e)} style={S.editBtn}>Edit</button><button onClick={()=>{if(confirm(`Remove ${e.name}?`))onDeleteEmployee(e.id);}} style={S.delBtn}>Remove</button></td></tr>);})}</tbody></table></div>
       </div>}
 
       {tab === "all" && <div>
